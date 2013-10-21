@@ -1,4 +1,4 @@
-package com.codepath.apps.restclienttemplate.models;
+package org.davidlin.twitterclient.models;
 
 import java.util.ArrayList;
 
