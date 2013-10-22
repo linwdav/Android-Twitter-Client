@@ -7,8 +7,58 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Tweet extends BaseModel {
+public class Tweet {
+	
+	private User user;
+	private String body;
+	private String date;
+	private long timestamp;
+	
+	public User getUser() {
+		return this.user;
+	}
+	
+	public String getBody() {
+		return this.body;
+	}
+	
+	public String getDate() {
+		return this.date;
+	}
+	
+	public long getTimestamp() {
+		return this.timestamp;
+	}
+	
+	public static Tweet fromJson(JSONObject jsonObject) {
+		Tweet tweet = new Tweet();
+		try {
+			tweet.user = User.fromJson(jsonObject);
+			tweet.body = jsonObject.getString("text");
+			tweet.date = jsonObject.getString("created_at");
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return tweet;
+	}
+	
+	public static List<Tweet> fromJson(JSONArray jsonArray) {
+		List<Tweet> tweets = new ArrayList<Tweet>(jsonArray.length());
+		for (int i = 0; i < jsonArray.length(); i++) {
+			try {
+				Tweet tweet = fromJson(jsonArray.getJSONObject(i));
+				if (tweet != null) {
+					tweets.add(tweet);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		return tweets;
+	}
 
+	/*
 	private User user;
 	
 	public User getUser() {
@@ -61,5 +111,6 @@ public class Tweet extends BaseModel {
 		}
 		return tweets;
 	}
+	*/
 	
 }
