@@ -6,9 +6,13 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_photos">Flickr Photos</string>
     <string name="login_label">Log in</string>
-    <string name="title_activity_timeline">TimelineActivity</string>
+    <string name="title_activity_timeline">Timeline</string>
     <string name="profile_image">Profile image</string>
     <string name="refresh">Refresh</string>
     <string name="compose">Compose</string>
+    <string name="title_activity_tweet">Compose Tweet</string>
+    <string name="cancel">Cancel</string>
+    <string name="tweet">Tweet</string>
+    <string name="tweet_hint">Type your tweet here</string>
 
 </resources>

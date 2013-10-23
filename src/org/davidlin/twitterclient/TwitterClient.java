@@ -24,8 +24,8 @@ import com.loopj.android.http.RequestParams;
 public class TwitterClient extends OAuthBaseClient {
     public static final Class<? extends Api> REST_API_CLASS = TwitterApi.class; // Change this
     public static final String REST_URL = "https://api.twitter.com/1.1"; // Change this, base API URL
-    public static final String REST_CONSUMER_KEY = "7glPQLNr3to2t2ScyKSHA";       // Change this
-    public static final String REST_CONSUMER_SECRET = "X7WpVEEq5mQUE17qwNM2iyVIThwdQRlX3DyQZ0vA"; // Change this
+    public static final String REST_CONSUMER_KEY = "uHQ5BF3J1SI9tFfYCDQ";       // Change this
+    public static final String REST_CONSUMER_SECRET = "OvkHWSEnW5CCcpRVi4VOPGApuUHLljQdG0Ax9pRtd78"; // Change this
     public static final String REST_CALLBACK_URL = "oauth://twitterclient"; // Change this (here and in manifest)
     
     public TwitterClient(Context context) {
@@ -34,7 +34,9 @@ public class TwitterClient extends OAuthBaseClient {
     
     public void getHomeTimeline(AsyncHttpResponseHandler handler) {
     	String url = getApiUrl("statuses/home_timeline.json");
-    	client.get(url, null, handler);
+    	RequestParams params = new RequestParams();
+    	params.put("count", String.valueOf(25));
+    	client.get(url, params, handler);
     }
     
     public void verifyAccountCredentials(AsyncHttpResponseHandler handler) {
@@ -42,14 +44,11 @@ public class TwitterClient extends OAuthBaseClient {
     	client.get(url, null, handler);
     }
     
-    // CHANGE THIS
-    // DEFINE METHODS for different API endpoints here
-    public void getInterestingnessList(AsyncHttpResponseHandler handler) {
-        String apiUrl = getApiUrl("?nojsoncallback=1&method=flickr.interestingness.getList");
-        // Can specify query string params directly or through RequestParams.
-        RequestParams params = new RequestParams();
-        params.put("format", "json");
-        client.get(apiUrl, params, handler);
+    public void postTweet(String tweetMsg, AsyncHttpResponseHandler handler) {
+    	String url = getApiUrl("statuses/update.json");
+    	RequestParams params = new RequestParams();
+    	params.put("status", String.valueOf(tweetMsg));
+    	client.post(url, params, handler);
     }
     
     /* 1. Define the endpoint URL with getApiUrl and pass a relative path to the endpoint

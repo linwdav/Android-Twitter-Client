@@ -67,7 +67,6 @@ public class Tweet {
 	}
 
 	private static Date getTwitterDate(String date) throws ParseException {
-
 		final String twitterDateFormat = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
 		SimpleDateFormat sf = new SimpleDateFormat(twitterDateFormat, TimelineActivity.getContext().getResources().getConfiguration().locale);
 		sf.setLenient(true);

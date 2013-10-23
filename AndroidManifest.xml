@@ -47,6 +47,10 @@
             android:name="org.davidlin.twitterclient.TimelineActivity"
             android:label="@string/title_activity_timeline" >
         </activity>
+        <activity
+            android:name="org.davidlin.twitterclient.TweetActivity"
+            android:label="@string/title_activity_tweet" >
+        </activity>
     </application>
 
 </manifest>

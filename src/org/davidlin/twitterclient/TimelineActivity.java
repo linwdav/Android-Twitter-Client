@@ -8,13 +8,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
-import android.util.Log;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
@@ -23,6 +22,8 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class TimelineActivity extends SherlockActivity {
 
 	private static Context context;
+	private static User currentUser;
+	private static TweetsAdapter adapter;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,7 @@ public class TimelineActivity extends SherlockActivity {
 			@Override
 			public void onSuccess(JSONObject jsonAccount) {
 				User user = User.fromJson(jsonAccount);
+				currentUser = user;
 				ActionBar actionBar = getSupportActionBar();
 				actionBar.setTitle("@" + user.getScreenName());
 			}
@@ -55,21 +57,45 @@ public class TimelineActivity extends SherlockActivity {
 		TwitterApp.getRestClient().getHomeTimeline(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonTweets) {
-				Log.d("DEBUG", jsonTweets.toString());
 				List<Tweet> tweets = Tweet.fromJson(jsonTweets);
 				ListView lvTweets = (ListView) findViewById(R.id.lvTweets);
-				TweetsAdapter adapter = new TweetsAdapter(getBaseContext(), tweets);
+				adapter = new TweetsAdapter(getBaseContext(), tweets);
 				lvTweets.setAdapter(adapter);
 			}
 		});
 	}
 	
 	public void refreshTweets(MenuItem mi) {
-		Toast.makeText(getApplicationContext(), "Refresh tweets", Toast.LENGTH_SHORT).show();
+		adapter.clear();
+		getHomeTimeline();
 	}
 	
 	public void composeTweet(MenuItem mi) {
-		Toast.makeText(getApplicationContext(), "Compose tweet", Toast.LENGTH_SHORT).show();
+		Intent i = new Intent(this, TweetActivity.class);
+		if (currentUser != null) {
+			i.putExtra("profileImageUrl", currentUser.getProfileImageUrl());
+			i.putExtra("screenName", "@" + currentUser.getScreenName());
+		}
+		else {
+			i.putExtra("profileImageUrl", "");
+			i.putExtra("screenName", "@User");
+		}
+    	startActivityForResult(i, 0);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	  if (resultCode == RESULT_OK && requestCode == 0) {
+		 String tweetText = data.getExtras().getString("tweetMsg");
+		 if (tweetText != null) {
+			 TwitterApp.getRestClient().postTweet(tweetText, new JsonHttpResponseHandler() {
+                 @Override
+                 public void onSuccess(JSONObject response) {
+                         refreshTweets(null);
+                 }
+			 });
+		 }
+	  }
 	}
 	
 	public static Context getContext() {
