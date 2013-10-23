@@ -1,48 +1,56 @@
 package org.davidlin.twitterclient.models;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.davidlin.twitterclient.TimelineActivity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Tweet {
-	
+
 	private User user;
 	private String body;
+	private Date twitterDate;
 	private String date;
-	private long timestamp;
-	
+
 	public User getUser() {
 		return this.user;
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
+	public Date getTwitterDate() {
+		return this.twitterDate;
+	}
+
 	public String getDate() {
 		return this.date;
 	}
-	
-	public long getTimestamp() {
-		return this.timestamp;
-	}
-	
+
 	public static Tweet fromJson(JSONObject jsonObject) {
 		Tweet tweet = new Tweet();
 		try {
-			tweet.user = User.fromJson(jsonObject);
+			tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
 			tweet.body = jsonObject.getString("text");
-			tweet.date = jsonObject.getString("created_at");
+			tweet.twitterDate = getTwitterDate(jsonObject.getString("created_at"));
+			
+			tweet.date = new SimpleDateFormat("h:mm a - d MMM ''yy", TimelineActivity.getContext().getResources().getConfiguration().locale).format(tweet.twitterDate);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return null;
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
 		return tweet;
 	}
-	
+
 	public static List<Tweet> fromJson(JSONArray jsonArray) {
 		List<Tweet> tweets = new ArrayList<Tweet>(jsonArray.length());
 		for (int i = 0; i < jsonArray.length(); i++) {
@@ -58,59 +66,12 @@ public class Tweet {
 		return tweets;
 	}
 
-	/*
-	private User user;
-	
-	public User getUser() {
-		return user;
+	private static Date getTwitterDate(String date) throws ParseException {
+
+		final String twitterDateFormat = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
+		SimpleDateFormat sf = new SimpleDateFormat(twitterDateFormat, TimelineActivity.getContext().getResources().getConfiguration().locale);
+		sf.setLenient(true);
+		return sf.parse(date);
 	}
-	
-	public String getBody() {
-		return getString("text");
-	}
-	
-	public long getId() {
-		return getLong("id");
-	}
-	
-	public boolean isFavorited() {
-		return getBoolean("favorited");
-	}
-	
-	public boolean isRetweeted() {
-		return getBoolean("retweeted");
-	}
-	
-	public static Tweet fromJson(JSONObject jsonObject) {
-		Tweet tweet = new Tweet();
-		try {
-			tweet.jsonObject = jsonObject;
-			tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-		return tweet;
-	}
-	
-	public static List<Tweet> fromJson(JSONArray jsonArray) {
-		List<Tweet> tweets = new ArrayList<Tweet>(jsonArray.length());
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject tweetJson = null;
-			try {
-				tweetJson = jsonArray.getJSONObject(i);
-			} catch (JSONException e) {
-				e.printStackTrace();
-				continue;
-			}
-			
-			Tweet tweet = Tweet.fromJson(tweetJson);
-			if (tweetJson != null) {
-				tweets.add(tweet);
-			}
-		}
-		return tweets;
-	}
-	*/
-	
+
 }
