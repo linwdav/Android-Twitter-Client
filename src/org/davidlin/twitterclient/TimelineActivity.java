@@ -22,16 +22,19 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class TimelineActivity extends SherlockActivity {
 
 	private static Context context;
-	private static User currentUser;
-	private static TweetsAdapter adapter;
+	private User currentUser;
+	private TweetsAdapter adapter;
+	private long oldestTweetId = 0;
+	private ListView lvTweets;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
 		context = this.getApplicationContext();
+		setupViews();
 		getScreenName();
-		getHomeTimeline();
+		loadTweets();
 	}
 
 	@Override
@@ -53,21 +56,41 @@ public class TimelineActivity extends SherlockActivity {
 		});
 	}
 	
-	private void getHomeTimeline() {
-		TwitterApp.getRestClient().getHomeTimeline(new JsonHttpResponseHandler() {
+	private void setupViews() {
+		lvTweets = (ListView) findViewById(R.id.lvTweets);
+	}
+	
+	private void loadTweets() {
+		if (adapter != null && adapter.getCount() > 0)  {
+			oldestTweetId = adapter.getItem(adapter.getCount() - 1).getId() - 1;
+		}
+		TwitterApp.getRestClient().getHomeTimeline(oldestTweetId, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonTweets) {
 				List<Tweet> tweets = Tweet.fromJson(jsonTweets);
-				ListView lvTweets = (ListView) findViewById(R.id.lvTweets);
-				adapter = new TweetsAdapter(getBaseContext(), tweets);
-				lvTweets.setAdapter(adapter);
+				if (adapter != null && adapter.getCount() > 0)  {
+					adapter.addAll(tweets);
+				} else {
+					adapter = new TweetsAdapter(getBaseContext(), tweets);
+					lvTweets.setAdapter(adapter);
+					lvTweets.setOnScrollListener(new EndlessScrollListener() {
+						@Override
+						public void onLoadMore(int page, int totalItemsCount) {
+							loadTweets();
+						}
+						
+					});
+				}
 			}
 		});
 	}
 	
 	public void refreshTweets(MenuItem mi) {
-		adapter.clear();
-		getHomeTimeline();
+		if (adapter != null && adapter.getCount() > 0)  {
+			adapter.clear();
+			oldestTweetId = 0;
+		}
+		loadTweets();
 	}
 	
 	public void composeTweet(MenuItem mi) {

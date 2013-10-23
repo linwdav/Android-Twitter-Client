@@ -17,6 +17,7 @@ public class Tweet {
 	private String body;
 	private Date twitterDate;
 	private String date;
+	private long id;
 
 	public User getUser() {
 		return this.user;
@@ -33,6 +34,10 @@ public class Tweet {
 	public String getDate() {
 		return this.date;
 	}
+	
+	public long getId() {
+		return this.id;
+	}
 
 	public static Tweet fromJson(JSONObject jsonObject) {
 		Tweet tweet = new Tweet();
@@ -40,12 +45,14 @@ public class Tweet {
 			tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
 			tweet.body = jsonObject.getString("text");
 			tweet.twitterDate = getTwitterDate(jsonObject.getString("created_at"));
-			
 			tweet.date = new SimpleDateFormat("h:mm a - d MMM ''yy", TimelineActivity.getContext().getResources().getConfiguration().locale).format(tweet.twitterDate);
+			tweet.id = Long.valueOf(jsonObject.getString("id"));
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return null;
 		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		}
 		return tweet;
