@@ -14,6 +14,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
@@ -53,6 +54,14 @@ public class TimelineActivity extends SherlockActivity {
 				ActionBar actionBar = getSupportActionBar();
 				actionBar.setTitle("@" + user.getScreenName());
 			}
+
+			@Override
+			public void onFailure(Throwable arg0, JSONObject arg1) {
+				Toast.makeText(getApplicationContext(), "Error getting user screen name", Toast.LENGTH_SHORT).show();
+				super.onFailure(arg0, arg1);
+			}
+			
+			
 		});
 	}
 	
@@ -82,6 +91,14 @@ public class TimelineActivity extends SherlockActivity {
 					});
 				}
 			}
+
+			@Override
+			public void onFailure(Throwable arg0, JSONObject arg1) {
+				Toast.makeText(getApplicationContext(), "Error loading tweets", Toast.LENGTH_SHORT).show();
+				super.onFailure(arg0, arg1);
+			}
+			
+			
 		});
 	}
 	
@@ -112,10 +129,17 @@ public class TimelineActivity extends SherlockActivity {
 		 String tweetText = data.getExtras().getString("tweetMsg");
 		 if (tweetText != null) {
 			 TwitterApp.getRestClient().postTweet(tweetText, new JsonHttpResponseHandler() {
-                 @Override
-                 public void onSuccess(JSONObject response) {
-                         refreshTweets(null);
-                 }
+				@Override
+				public void onSuccess(JSONObject response) {
+					refreshTweets(null);
+				}
+				 
+				@Override
+				public void onFailure(Throwable arg0, JSONObject arg1) {
+					Toast.makeText(getApplicationContext(), "Error posting tweet", Toast.LENGTH_SHORT).show();
+					super.onFailure(arg0, arg1);
+				}
+                 
 			 });
 		 }
 	  }
