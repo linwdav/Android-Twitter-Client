@@ -9,6 +9,8 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -23,7 +25,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class TimelineActivity extends SherlockActivity {
 
 	private static Context context;
-	private User currentUser;
+	private static User currentUser;
 	private TweetsAdapter adapter;
 	private long oldestTweetId = 0;
 	private ListView lvTweets;
@@ -49,7 +51,8 @@ public class TimelineActivity extends SherlockActivity {
 		TwitterApp.getRestClient().verifyAccountCredentials(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONObject jsonAccount) {
-				User user = User.fromJson(jsonAccount);
+				//User user = User.fromJson(jsonAccount);
+				User user = new User(jsonAccount);
 				currentUser = user;
 				ActionBar actionBar = getSupportActionBar();
 				actionBar.setTitle("@" + user.getScreenName());
@@ -69,41 +72,73 @@ public class TimelineActivity extends SherlockActivity {
 		lvTweets = (ListView) findViewById(R.id.lvTweets);
 	}
 	
-	private void loadTweets() {
-		if (adapter != null && adapter.getCount() > 0)  {
-			oldestTweetId = adapter.getItem(adapter.getCount() - 1).getId() - 1;
+	private boolean isNetworkConnected() {
+		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		if (ni == null) {
+			// There are no active networks.
+			return false;
+		} else {
+			return true;
 		}
-		TwitterApp.getRestClient().getHomeTimeline(oldestTweetId, new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONArray jsonTweets) {
-				List<Tweet> tweets = Tweet.fromJson(jsonTweets);
-				if (adapter != null && adapter.getCount() > 0)  {
-					adapter.addAll(tweets);
-				} else {
-					adapter = new TweetsAdapter(getBaseContext(), tweets);
-					lvTweets.setAdapter(adapter);
-					lvTweets.setOnScrollListener(new EndlessScrollListener() {
-						@Override
-						public void onLoadMore(int page, int totalItemsCount) {
-							loadTweets();
-						}
-						
-					});
+	}
+	
+	private void loadTweets() {
+		if (isNetworkConnected()) {
+			if (adapter != null && adapter.getCount() > 0)  {
+				oldestTweetId = adapter.getItem(adapter.getCount() - 1).getTweetId() - 1;
+			}
+			TwitterApp.getRestClient().getHomeTimeline(oldestTweetId, new JsonHttpResponseHandler() {
+				@Override
+				public void onSuccess(JSONArray jsonTweets) {
+					// Clear persisted tweets and users
+					Tweet.delete(Tweet.class);
+					User.delete(User.class);
+					List<Tweet> tweets = Tweet.fromJson(jsonTweets);
+					addTweetsToListView(tweets);
 				}
-			}
-
-			@Override
-			public void onFailure(Throwable arg0, JSONObject arg1) {
-				Toast.makeText(getApplicationContext(), "Error loading tweets", Toast.LENGTH_SHORT).show();
-				super.onFailure(arg0, arg1);
-			}
-			
-			
-		});
+				@Override
+				public void onFailure(Throwable arg0, JSONObject arg1) {
+					Toast.makeText(getApplicationContext(), "Error loading tweets", Toast.LENGTH_SHORT).show();
+					super.onFailure(arg0, arg1);
+				}
+			});
+		} else {
+			loadTweetsFromDb();
+		}
+	}
+	
+	private void loadTweetsFromDb() {
+		List<Tweet> tweets = Tweet.all(Tweet.class);
+		if (adapter != null) {
+			adapter.clear();
+		}
+		addTweetsToListView(tweets);
+	}
+	
+	private void addTweetsToListView(List<Tweet> tweets) {
+		if (adapter != null && adapter.getCount() > 0)  {
+			// Add tweets to bottom for endless scrolling
+			adapter.addAll(tweets);
+		} else {
+			adapter = new TweetsAdapter(getBaseContext(), tweets);
+			lvTweets.setAdapter(adapter);
+			lvTweets.setOnScrollListener(new EndlessScrollListener() {
+				@Override
+				public void onLoadMore(int page, int totalItemsCount) {
+					if (isNetworkConnected()) {
+						loadTweets();
+					}
+				}
+			});
+		}
 	}
 	
 	public void refreshTweets(MenuItem mi) {
-		if (adapter != null && adapter.getCount() > 0)  {
+		if (!isNetworkConnected()) {
+			Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+		}
+		else if (adapter != null && adapter.getCount() > 0)  {
 			adapter.clear();
 			oldestTweetId = 0;
 		}
@@ -111,23 +146,46 @@ public class TimelineActivity extends SherlockActivity {
 	}
 	
 	public void composeTweet(MenuItem mi) {
-		Intent i = new Intent(this, TweetActivity.class);
-		if (currentUser != null) {
-			i.putExtra("profileImageUrl", currentUser.getProfileImageUrl());
-			i.putExtra("screenName", "@" + currentUser.getScreenName());
+		if (!isNetworkConnected()) {
+			Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_SHORT).show();
 		}
 		else {
-			i.putExtra("profileImageUrl", "");
-			i.putExtra("screenName", "@User");
+			Intent i = new Intent(this, TweetActivity.class);
+			if (currentUser != null) {
+				i.putExtra("profileImageUrl", currentUser.getProfileImageUrl());
+				i.putExtra("screenName", "@" + currentUser.getScreenName());
+			}
+			else {
+				i.putExtra("profileImageUrl", "");
+				i.putExtra("screenName", "@User");
+			}
+	    	startActivityForResult(i, 0);
 		}
-    	startActivityForResult(i, 0);
 	}
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	  if (resultCode == RESULT_OK && requestCode == 0) {
 		 String tweetText = data.getExtras().getString("tweetMsg");
+		 //Tweet tweet = (Tweet) data.getSerializableExtra("tweet");
 		 if (tweetText != null) {
+			 /*
+			 if (adapter != null) {
+				 adapter.insert(tweet, 0);
+			 } else {
+				 List<Tweet> tweets = new ArrayList<Tweet>();
+				 tweets.add(tweet);
+				 adapter = new TweetsAdapter(getBaseContext(), tweets);
+				 lvTweets.setAdapter(adapter);
+					lvTweets.setOnScrollListener(new EndlessScrollListener() {
+						@Override
+						public void onLoadMore(int page, int totalItemsCount) {
+							loadTweets();
+						}
+						
+					});
+			 }
+			 */
 			 TwitterApp.getRestClient().postTweet(tweetText, new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(JSONObject response) {
@@ -147,6 +205,10 @@ public class TimelineActivity extends SherlockActivity {
 	
 	public static Context getContext() {
 		return context;
+	}
+	
+	public static User getCurrentUser() {
+		return currentUser;
 	}
 
 }

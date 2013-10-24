@@ -53,7 +53,9 @@ public class TweetActivity extends Activity {
 		}
 		else {
 			Intent i = new Intent();
+			//Tweet tweet = Tweet.createTweet(TimelineActivity.getCurrentUser(), tweetMsg, new SimpleDateFormat("h:mm a - d MMM ''yy", TimelineActivity.getContext().getResources().getConfiguration().locale).format(Calendar.getInstance().getTime()));
 			i.putExtra("tweetMsg", tweetMsg);
+			//i.putExtra("tweet", tweet);
 			setResult(RESULT_OK, i);
 			finish();
 		}
