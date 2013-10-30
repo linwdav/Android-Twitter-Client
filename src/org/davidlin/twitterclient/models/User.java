@@ -19,6 +19,9 @@ public class User extends Model {
 	@Column(name = "profileImageUrl")
 	private String profileImageUrl;
 	
+	@Column(name = "followersCount")
+	private int followersCount;
+	
 	public User() {
 		super();
 	}

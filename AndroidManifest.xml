@@ -53,6 +53,10 @@
             android:name="org.davidlin.twitterclient.TweetActivity"
             android:label="@string/title_activity_tweet" >
         </activity>
+        <activity
+            android:name="org.davidlin.twitterclient.ProfileActivity"
+            android:label="@string/title_activity_profile" >
+        </activity>
     </application>
 
 </manifest>

@@ -1,18 +1,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <!--
     <item
         android:id="@+id/action_refresh"
         android:icon="@drawable/ic_refresh"
         android:showAsAction="ifRoom"
         android:onClick="refreshTweets"
         android:title="@string/refresh">
-    </item>
+    </item> -->
     <item
         android:id="@+id/action_compose"
         android:icon="@drawable/ic_compose"
         android:showAsAction="ifRoom"
         android:onClick="composeTweet"
         android:title="@string/compose">
+    </item>
+    <item
+        android:id="@+id/action_profile"
+        android:icon="@drawable/ic_profile"
+        android:showAsAction="ifRoom"
+        android:onClick="showProfile"
+        android:title="@string/profile">
     </item>
 
 </menu>
