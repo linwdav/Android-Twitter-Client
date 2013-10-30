@@ -97,8 +97,8 @@ public class Tweet extends Model implements Serializable {
 					tweets.add(tweet);
 					if (Tweet.all(Tweet.class).size() < 25) {
 						tweet.save();
+						Log.d("DEBUG", "Saving tweet # " + Tweet.all(Tweet.class).size());
 					}
-					Log.d("org.davidlin.debug", "There are " + Tweet.all(Tweet.class).size() + " entries in the database");
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
