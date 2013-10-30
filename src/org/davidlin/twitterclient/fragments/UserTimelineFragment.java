@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -16,6 +17,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class UserTimelineFragment extends TweetsListFragment {
 
 	private long oldestTweetId = 0;
+	private String screenName;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -34,7 +36,7 @@ public class UserTimelineFragment extends TweetsListFragment {
 			if (getAdapter() != null && getAdapter().getCount() > 0)  {
 				oldestTweetId = getAdapter().getItem(getAdapter().getCount() - 1).getTweetId() - 1;
 			}
-			TwitterApp.getRestClient().getUserTimeline(oldestTweetId, new JsonHttpResponseHandler() {
+			TwitterApp.getRestClient().getUserTimeline(oldestTweetId, screenName, new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(JSONArray jsonTweets) {
 					if (!isLoadingMore) {
@@ -43,6 +45,7 @@ public class UserTimelineFragment extends TweetsListFragment {
 						User.delete(User.class);
 					}
 					List<Tweet> tweets = Tweet.fromJson(jsonTweets);
+					Log.d("DEBUG", "There are this many tweets " + tweets.size());
 					getAdapter().addAll(tweets);
 				}
 				@Override
@@ -78,6 +81,11 @@ public class UserTimelineFragment extends TweetsListFragment {
 	
 	public long getOldestTweetId() {
 		return this.oldestTweetId;
+	}
+	
+	public void setScreenName(String screenName) {
+		this.screenName = screenName;
+		refreshTweets();
 	}
 
 }

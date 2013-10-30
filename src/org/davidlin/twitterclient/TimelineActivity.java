@@ -3,6 +3,7 @@ package org.davidlin.twitterclient;
 import org.davidlin.twitterclient.fragments.HomeTimelineFragment;
 import org.davidlin.twitterclient.fragments.MentionsFragment;
 import org.davidlin.twitterclient.fragments.TweetsListFragment;
+import org.davidlin.twitterclient.models.User;
 import org.json.JSONObject;
 
 import android.content.Context;
@@ -23,14 +24,12 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class TimelineActivity extends SherlockFragmentActivity implements TabListener {
 
 	private static Context context;
-	private TweetsListFragment fragmentTweet;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
 		context = getApplicationContext();
-		//fragmentTweet = (TweetsListFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentTweetsList);
 		setupNavigationTabs();
 	}
 
@@ -52,25 +51,22 @@ public class TimelineActivity extends SherlockFragmentActivity implements TabLis
 	}
 	
 	public void refreshTweets(MenuItem mi) {
-		fragmentTweet.refreshTweets();
+		TweetsListFragment tweetFrag = (TweetsListFragment) getSupportFragmentManager().findFragmentById(R.id.frame_container);
+		tweetFrag.refreshTweets();
 	}
 	
 	public void composeTweet(MenuItem mi) {
-		if (!fragmentTweet.isNetworkConnected()) {
-			Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+		Intent i = new Intent(this, TweetActivity.class);
+		User currentUser = TweetsListFragment.getCurrentUser();
+		if (currentUser != null) {
+			i.putExtra("profileImageUrl", currentUser.getProfileImageUrl());
+			i.putExtra("screenName", "@" + currentUser.getScreenName());
 		}
 		else {
-			Intent i = new Intent(this, TweetActivity.class);
-			if (fragmentTweet.getCurrentUser() != null) {
-				i.putExtra("profileImageUrl", fragmentTweet.getCurrentUser().getProfileImageUrl());
-				i.putExtra("screenName", "@" + fragmentTweet.getCurrentUser().getScreenName());
-			}
-			else {
-				i.putExtra("profileImageUrl", "");
-				i.putExtra("screenName", "@User");
-			}
-	    	startActivityForResult(i, 0);
+			i.putExtra("profileImageUrl", "");
+			i.putExtra("screenName", "@User");
 		}
+    	startActivityForResult(i, 0);
 	}
 	
 	public void showProfile(MenuItem mi) {
@@ -104,7 +100,7 @@ public class TimelineActivity extends SherlockFragmentActivity implements TabLis
 			 TwitterApp.getRestClient().postTweet(tweetText, new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(JSONObject response) {
-					fragmentTweet.refreshTweets();
+					refreshTweets(null);
 				}
 				 
 				@Override

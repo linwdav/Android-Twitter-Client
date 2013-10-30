@@ -20,7 +20,13 @@ public class User extends Model {
 	private String profileImageUrl;
 	
 	@Column(name = "followersCount")
-	private int followersCount;
+	private String followersCount;
+	
+	@Column(name = "followingCount")
+	private String followingCount;
+	
+	@Column(name = "tagline")
+	private String tagline;
 	
 	public User() {
 		super();
@@ -33,12 +39,14 @@ public class User extends Model {
 			this.name = jsonObject.getString("name");
 			this.screenName = jsonObject.getString("screen_name");
 			this.profileImageUrl = jsonObject.getString("profile_image_url");
+			this.followersCount = jsonObject.getString("followers_count");
+			this.followingCount = jsonObject.getString("friends_count");
+			this.tagline = jsonObject.getString("description");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	// Getters
 	public String getName() {
 		return this.name;
 	}
@@ -47,6 +55,15 @@ public class User extends Model {
 	}
 	public String getProfileImageUrl() {
 		return this.profileImageUrl;
+	}
+	public String getFollowersCount() {
+		return this.followersCount;
+	}
+	public String getFollowingCount() {
+		return this.followingCount;
+	}
+	public String getTagline() {
+		return this.tagline;
 	}
 	
 }

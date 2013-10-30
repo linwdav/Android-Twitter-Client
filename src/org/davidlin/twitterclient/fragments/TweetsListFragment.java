@@ -15,6 +15,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +30,7 @@ public abstract class TweetsListFragment extends SherlockFragment {
 
 	private TweetsAdapter adapter;
 	private ListView lvTweets;
-	private User currentUser;
+	private static User currentUser;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -41,7 +42,7 @@ public abstract class TweetsListFragment extends SherlockFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setupViews();
-		getScreenName();
+		getMyScreenName();
 	}
 	
 	private void setupViews() {
@@ -59,8 +60,8 @@ public abstract class TweetsListFragment extends SherlockFragment {
 		});
 	}
 	
-	private void getScreenName() {
-		TwitterApp.getRestClient().verifyAccountCredentials(new JsonHttpResponseHandler() {
+	private void getMyScreenName() {
+		TwitterApp.getRestClient().getMyProfileInfo(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONObject jsonAccount) {
 				User user = new User(jsonAccount);
@@ -71,6 +72,7 @@ public abstract class TweetsListFragment extends SherlockFragment {
 
 			@Override
 			public void onFailure(Throwable arg0, JSONObject arg1) {
+				Log.d("DEBUG", arg1.toString());
 				Toast.makeText(getActivity(), "Error getting user screen name", Toast.LENGTH_SHORT).show();
 				super.onFailure(arg0, arg1);
 			}
@@ -92,7 +94,7 @@ public abstract class TweetsListFragment extends SherlockFragment {
 		return adapter;
 	}
 	
-	public User getCurrentUser() {
+	public static User getCurrentUser() {
 		return currentUser;
 	}
 

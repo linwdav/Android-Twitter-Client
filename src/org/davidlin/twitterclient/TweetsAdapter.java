@@ -7,9 +7,11 @@ import org.davidlin.twitterclient.models.Tweet;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -44,9 +46,19 @@ public class TweetsAdapter extends ArrayAdapter<Tweet> {
 		String formattedTimestamp = "<font><small>" + tweet.getDate() + "</font></small>";
 		timestampView.setText(Html.fromHtml(formattedTimestamp));
 		
+		final Context context = view.getContext();
+		imageView.setTag(tweet.getUser().getScreenName());
+		imageView.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(context, ProfileActivity.class);
+				i.putExtra("screenName", v.getTag().toString());
+				context.startActivity(i);
+			}
+			
+		});
+		
 		return view;
 	}
 	
-	
-
 }
