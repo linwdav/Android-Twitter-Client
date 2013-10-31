@@ -23,15 +23,16 @@ public class ProfileActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_profile);
 		String screenName = getIntent().getStringExtra("screenName");
+		Log.d("DEBUG", "Screenname is " + screenName);
 		if (screenName == null) {
-			loadProfileInfo();
+			loadMyProfileInfo();
 		} else {
 			loadProfileInfo(screenName);
 		}
 	}
 	
-	public void loadProfileInfo() {
-		final Context context = this.getApplicationContext();
+	public void loadMyProfileInfo() {
+		final Context context = this.getBaseContext();
 		TwitterApp.getRestClient().getMyProfileInfo(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONObject jsonAccount) {
@@ -50,7 +51,7 @@ public class ProfileActivity extends SherlockFragmentActivity {
 	}
 	
 	public void loadProfileInfo(final String screenName) {
-		final Context context = this.getApplicationContext();
+		final Context context = this.getBaseContext();
 		TwitterApp.getRestClient().getProfileInfo(screenName, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONObject jsonAccount) {

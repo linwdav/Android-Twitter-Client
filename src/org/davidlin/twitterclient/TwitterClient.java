@@ -4,6 +4,7 @@ import org.scribe.builder.api.Api;
 import org.scribe.builder.api.TwitterApi;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.codepath.oauth.OAuthBaseClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -62,6 +63,7 @@ public class TwitterClient extends OAuthBaseClient {
     	if (screenName != null) {
     		params.put("screen_name", screenName);
     	}
+    	Log.d("DEBUG", "Call getUserTimeline()");
     	client.get(url, params, handler);
     }
     

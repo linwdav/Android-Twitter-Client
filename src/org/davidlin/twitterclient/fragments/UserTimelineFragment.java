@@ -17,7 +17,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class UserTimelineFragment extends TweetsListFragment {
 
 	private long oldestTweetId = 0;
-	private String screenName;
+	private volatile String screenName;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -32,10 +32,13 @@ public class UserTimelineFragment extends TweetsListFragment {
 	
 	@Override
 	public void loadTweets(final boolean isLoadingMore) {
+		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		Log.d("DEBUG", stackTraceElements[3].getMethodName());
 		if (isNetworkConnected()) {
 			if (getAdapter() != null && getAdapter().getCount() > 0)  {
 				oldestTweetId = getAdapter().getItem(getAdapter().getCount() - 1).getTweetId() - 1;
 			}
+			Log.d("DEBUG", "Calling getUserTimeline from loadTweets with screenName " + screenName);
 			TwitterApp.getRestClient().getUserTimeline(oldestTweetId, screenName, new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(JSONArray jsonTweets) {
@@ -72,7 +75,7 @@ public class UserTimelineFragment extends TweetsListFragment {
 		if (!isNetworkConnected()) {
 			Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
 		}
-		else if (getAdapter() != null && getAdapter().getCount() > 0)  {
+		else if (getAdapter() != null)  {
 			getAdapter().clear();
 			oldestTweetId = 0;
 		}
